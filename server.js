@@ -2,17 +2,20 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-// Add base path configuration
-const BASE_PATH = process.env.NODE_ENV === 'production' ? '/Static-Site' : '';
-
 const server = http.createServer((req, res) => {
-    // Remove base path from request URL for local development
-    const urlWithoutBase = req.url.replace(BASE_PATH, '');
-    let filePath = path.join(__dirname, 'docs', urlWithoutBase === '/' ? 'index.html' : urlWithoutBase);
+    // For local development, we don't need to handle the /Static-Site prefix
+    let urlPath = req.url;
+    
+    // Remove trailing slash if present (except for root path)
+    if (urlPath.length > 1 && urlPath.endsWith('/')) {
+        urlPath = urlPath.slice(0, -1);
+    }
+    
+    let filePath = path.join(__dirname, 'docs', urlPath === '/' ? 'index.html' : urlPath);
     
     // If path doesn't have extension, assume it's a route and serve index.html
     if (!path.extname(filePath)) {
-        filePath = path.join(__dirname, 'docs', urlWithoutBase, 'index.html');
+        filePath = path.join(filePath, 'index.html');
     }
 
     const contentType = {
