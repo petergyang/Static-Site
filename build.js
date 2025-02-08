@@ -4,7 +4,7 @@ const { marked } = require('marked');
 const frontMatter = require('front-matter');
 
 // Ensure directories exist
-const dirs = ['src/content', 'src/templates', 'src/styles', 'src/scripts', 'public'];
+const dirs = ['src/content', 'src/templates', 'src/styles', 'src/scripts', 'docs'];
 dirs.forEach(dir => fs.ensureDirSync(dir));
 
 // Create basic template if it doesn't exist
@@ -36,9 +36,9 @@ if (!fs.existsSync('src/templates/base.html')) {
 }
 
 // Copy static assets
-fs.copySync('src/styles', 'public/styles', { overwrite: true });
+fs.copySync('src/styles', 'docs/styles', { overwrite: true });
 if (fs.existsSync('src/scripts')) {
-    fs.copySync('src/scripts', 'public/scripts', { overwrite: true });
+    fs.copySync('src/scripts', 'docs/scripts', { overwrite: true });
 }
 
 // Build pages from markdown
@@ -54,11 +54,11 @@ function buildPage(filepath) {
     
     // Generate output path
     const relativePath = path.relative('src/content', filepath);
-    const outputPath = path.join('public', relativePath.replace('.md', '.html'));
+    const outputPath = path.join('docs', relativePath.replace('.md', '.html'));
     
     // If file is index.md, put it in the root
     if (path.basename(filepath) === 'index.md') {
-        fs.outputFileSync('public/index.html', page);
+        fs.outputFileSync('docs/index.html', page);
     } else {
         // Create directory for the page and add index.html
         const dir = outputPath.replace('.html', '');
