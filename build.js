@@ -68,7 +68,14 @@ function replacePartials(template) {
 function buildPage(filePath) {
     const fileContent = fs.readFileSync(filePath, 'utf8');
     const { attributes, body } = frontMatter(fileContent);
-    const html = marked(body);
+    
+    // Process markdown content to handle relative paths
+    const processedBody = body.replace(
+        /\[([^\]]+)\]\(\.?(\/[^)]+)\)/g,
+        (match, text, url) => `[${text}](${url.startsWith('/') ? url.slice(1) : url})`
+    );
+    
+    const html = marked(processedBody);
     
     // Get the output path
     const relativePath = path.relative('src/content', filePath);
@@ -90,18 +97,20 @@ function buildPage(filePath) {
     let template = fs.readFileSync(`src/templates/${attributes.template || 'base'}.html`, 'utf8');
     template = replacePartials(template);
     
-    // Update how we replace paths in the HTML
+    // Update the finalHtml processing
     const finalHtml = template
         .replace('{{title}}', attributes.title)
         .replace('{{content}}', html)
         .replace(/{{basePath}}/g, BASE_PATH)
-        // Fix absolute paths in href and src attributes, but only if they're internal links
-        .replace(/href="\//g, `href="${BASE_PATH}/`)
-        .replace(/src="\//g, `src="${BASE_PATH}/`)
-        // Don't modify external links (those starting with http)
+        // Fix absolute paths in href and src attributes
+        .replace(/(?<!content=")href="\//g, `href="${BASE_PATH}/`)
+        .replace(/(?<!content=")src="\//g, `src="${BASE_PATH}/`)
+        // Don't modify external links
         .replace(new RegExp(`href="${BASE_PATH}/http`, 'g'), 'href="http')
         // Fix any double Static-Site in paths
-        .replace(new RegExp(`${BASE_PATH}${BASE_PATH}`, 'g'), BASE_PATH);
+        .replace(new RegExp(`${BASE_PATH}${BASE_PATH}`, 'g'), BASE_PATH)
+        // Fix any double slashes in paths (except for http://)
+        .replace(/([^:])\/\//g, '$1/');
     
     fs.writeFileSync(outputPath, finalHtml);
 }
@@ -157,7 +166,7 @@ function buildSite() {
     buildBlogIndex();
 }
 
-// Update the buildBlogIndex function
+// Update the buildBlogIndex function to handle paths correctly
 function buildBlogIndex() {
     const blogDir = path.join('src/content/blog');
     if (!fs.existsSync(blogDir)) {
@@ -173,8 +182,8 @@ function buildBlogIndex() {
             return {
                 title: attributes.title,
                 date: attributes.date,
-                // Update URL construction to avoid double slashes
-                url: `/blog/${path.basename(file, '.md')}`
+                // Use relative paths in markdown content
+                url: `./blog/${path.basename(file, '.md')}`
             };
         })
         .sort((a, b) => new Date(b.date) - new Date(a.date));
