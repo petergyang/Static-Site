@@ -3,8 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 const server = http.createServer((req, res) => {
-    // For local development, we don't need to handle the /Static-Site prefix
-    let urlPath = req.url;
+    // Remove /Static-Site prefix if present
+    let urlPath = req.url.replace(/^\/Static-Site/, '');
     
     // Remove trailing slash if present (except for root path)
     if (urlPath.length > 1 && urlPath.endsWith('/')) {
@@ -45,4 +45,5 @@ const server = http.createServer((req, res) => {
 const PORT = 3000;
 server.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}/`);
+    console.log(`Also available at http://localhost:${PORT}/Static-Site/`);
 }); 
