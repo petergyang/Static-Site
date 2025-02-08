@@ -11,6 +11,15 @@ const server = http.createServer((req, res) => {
         urlPath = urlPath.slice(0, -1);
     }
     
+    // Only add /blog/ prefix for blog posts, not for other routes
+    if (!urlPath.startsWith('/blog/') && 
+        !urlPath.includes('.') && 
+        urlPath !== '/' && 
+        urlPath !== '/blog' && 
+        urlPath !== '/about') {
+        urlPath = '/blog' + urlPath;
+    }
+    
     let filePath = path.join(__dirname, 'docs', urlPath === '/' ? 'index.html' : urlPath);
     
     // If path doesn't have extension, assume it's a route and serve index.html

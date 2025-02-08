@@ -7,4 +7,4 @@ template: base
 
 Welcome to my blog! Here are my latest posts:
 
-- [Hello world!](hello-world)
+- [Hello world!](blog/hello-world)

@@ -160,7 +160,7 @@ function buildSite() {
     buildBlogIndex();
 }
 
-// Update the buildBlogIndex function to fix the blog post links
+// Update the buildBlogIndex function to include /blog/ in URLs
 function buildBlogIndex() {
     const blogDir = path.join('src/content/blog');
     if (!fs.existsSync(blogDir)) {
@@ -176,7 +176,7 @@ function buildBlogIndex() {
             return {
                 title: attributes.title,
                 date: attributes.date,
-                url: path.basename(file, '.md')
+                url: 'blog/' + path.basename(file, '.md') // Add blog/ prefix to URL
             };
         })
         .sort((a, b) => new Date(b.date) - new Date(a.date));
