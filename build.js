@@ -17,19 +17,19 @@ const baseTemplate = `<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{title}}</title>
-    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="{{basePath}}/styles/main.css">
 </head>
 <body>
     <nav>
-        <a href="/">Home</a>
-        <a href="/blog">Blog</a>
-        <a href="/about">About</a>
+        <a href="{{basePath}}/">Home</a>
+        <a href="{{basePath}}/blog">Blog</a>
+        <a href="{{basePath}}/about">About</a>
     </nav>
     <main>
         {{content}}
     </main>
     <footer>
-        <p>&copy; ${new Date().getFullYear()} Your Name</p>
+        <p>&copy; ${new Date().getFullYear()} Peter Yang</p>
     </footer>
 </body>
 </html>`;
@@ -159,7 +159,7 @@ function buildBlogIndex() {
             return {
                 title: attributes.title,
                 date: attributes.date,
-                url: `/blog/${path.basename(file, '.md')}`
+                url: `${BASE_PATH}/blog/${path.basename(file, '.md')}`
             };
         })
         .sort((a, b) => new Date(b.date) - new Date(a.date));
