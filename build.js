@@ -93,7 +93,7 @@ function buildPage(filePath) {
     // Replace template variables and ensure all paths have basePath
     const finalHtml = template
         .replace('{{title}}', attributes.title)
-        .replace('{{content}}', html)
+        .replace('{{content}}', html.replace(/href="\/(?!http)/g, `href="${BASE_PATH}/`))
         .replace(/{{basePath}}/g, BASE_PATH)
         // Fix absolute paths in href and src attributes
         .replace(/href="\//g, `href="${BASE_PATH}/`)
