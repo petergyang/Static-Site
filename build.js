@@ -55,11 +55,11 @@ function processIndexHtml() {
     const mainContentMatch = indexContent.match(/<main>([\s\S]*?)<\/main>/);
     const mainContent = mainContentMatch ? mainContentMatch[1] : '';
     
-    // Replace content in template
+    // Replace content in template and ensure basePath is replaced
     const finalHtml = template
         .replace('{{title}}', 'Welcome to My Site')
         .replace('{{content}}', mainContent)
-        .replace(/{{basePath}}/g, BASE_PATH);
+        .replace(/{{basePath}}/g, BASE_PATH);  // This is important!
     
     fs.writeFileSync('docs/index.html', finalHtml);
 }
