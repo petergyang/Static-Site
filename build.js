@@ -3,6 +3,9 @@ const path = require('path');
 const { marked } = require('marked');
 const frontMatter = require('front-matter');
 
+// Add base path configuration
+const BASE_PATH = process.env.NODE_ENV === 'production' ? '/Static-Site' : '';
+
 // Ensure directories exist
 const dirs = ['src/content', 'src/templates', 'src/styles', 'src/scripts', 'docs'];
 dirs.forEach(dir => fs.ensureDirSync(dir));
@@ -68,7 +71,8 @@ function buildPage(filePath) {
     // Replace template variables
     const finalHtml = template
         .replace('{{title}}', attributes.title)
-        .replace('{{content}}', html);
+        .replace('{{content}}', html)
+        .replace(/{{basePath}}/g, BASE_PATH);  // Replace all instances of basePath
     
     fs.writeFileSync(outputPath, finalHtml);
 }

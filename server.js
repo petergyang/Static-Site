@@ -2,12 +2,17 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
+// Add base path configuration
+const BASE_PATH = process.env.NODE_ENV === 'production' ? '/Static-Site' : '';
+
 const server = http.createServer((req, res) => {
-    let filePath = path.join(__dirname, 'docs', req.url === '/' ? 'index.html' : req.url);
+    // Remove base path from request URL for local development
+    const urlWithoutBase = req.url.replace(BASE_PATH, '');
+    let filePath = path.join(__dirname, 'docs', urlWithoutBase === '/' ? 'index.html' : urlWithoutBase);
     
     // If path doesn't have extension, assume it's a route and serve index.html
     if (!path.extname(filePath)) {
-        filePath = path.join(__dirname, 'docs', req.url, 'index.html');
+        filePath = path.join(__dirname, 'docs', urlWithoutBase, 'index.html');
     }
 
     const contentType = {
