@@ -131,4 +131,39 @@ footer {
         font-size: 1.5rem;
         padding: 0 1rem;
     }
+}
+
+/* Add these styles to the end of your main.css file */
+
+.blog-post {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    text-align: left;
+}
+
+.blog-post h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.blog-post h2 {
+    font-size: 1.8rem;
+    margin: 2rem 0 1rem;
+}
+
+.blog-post p {
+    margin-bottom: 1.5rem;
+}
+
+.blog-post code {
+    background: #f4f4f4;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+}
+
+.blog-post pre code {
+    display: block;
+    padding: 1rem;
+    overflow-x: auto;
 } 
