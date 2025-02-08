@@ -3,11 +3,11 @@ const fs = require('fs');
 const path = require('path');
 
 const server = http.createServer((req, res) => {
-    let filePath = path.join(__dirname, 'public', req.url === '/' ? 'index.html' : req.url);
+    let filePath = path.join(__dirname, 'docs', req.url === '/' ? 'index.html' : req.url);
     
     // If path doesn't have extension, assume it's a route and serve index.html
     if (!path.extname(filePath)) {
-        filePath = path.join(filePath, 'index.html');
+        filePath = path.join(__dirname, 'docs', req.url, 'index.html');
     }
 
     const contentType = {
