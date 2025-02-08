@@ -104,6 +104,7 @@ function buildPage(filePath) {
     const finalHtml = template
         .replace('{{title}}', attributes.title)
         .replace('{{content}}', processedHtml)
+        // Replace basePath before fixing other paths
         .replace(/{{basePath}}/g, BASE_PATH)
         // Fix absolute paths in href and src attributes
         .replace(/href="\//g, `href="${BASE_PATH}/`)
@@ -113,7 +114,9 @@ function buildPage(filePath) {
         // Fix any double Static-Site in paths
         .replace(new RegExp(`${BASE_PATH}${BASE_PATH}`, 'g'), BASE_PATH)
         // Fix any double slashes in paths (except for http://)
-        .replace(/([^:])\/\//g, '$1/');
+        .replace(/([^:])\/\//g, '$1/')
+        // Fix any remaining double paths
+        .replace(/([^:])\/blog\/blog\//g, '$1/blog/');
     
     fs.writeFileSync(outputPath, finalHtml);
 }
@@ -169,7 +172,7 @@ function buildSite() {
     buildBlogIndex();
 }
 
-// Update the buildBlogIndex function to handle paths correctly
+// Update the buildBlogIndex function to fix the double /blog issue
 function buildBlogIndex() {
     const blogDir = path.join('src/content/blog');
     if (!fs.existsSync(blogDir)) {
@@ -185,8 +188,8 @@ function buildBlogIndex() {
             return {
                 title: attributes.title,
                 date: attributes.date,
-                // Use absolute path without basePath (it will be added during build)
-                url: `/blog/${path.basename(file, '.md')}`
+                // Remove the /blog prefix since we're already in the blog section
+                url: `${path.basename(file, '.md')}`
             };
         })
         .sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -200,7 +203,7 @@ template: base
 
 Welcome to my blog! Here are my latest posts:
 
-${posts.map(post => `- [${post.title}](${post.url})`).join('\n')}
+${posts.map(post => `- [${post.title}](./${post.url})`).join('\n')}
 `;
 
     fs.writeFileSync('src/content/blog.md', blogIndexContent);
