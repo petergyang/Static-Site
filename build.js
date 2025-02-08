@@ -44,27 +44,27 @@ if (fs.existsSync('src/scripts')) {
     fs.copySync('src/scripts', 'docs/scripts', { overwrite: true });
 }
 
-// Add this function near the top of the file
-function processIndexHtml() {
-    if (!fs.existsSync('src/index.html')) return;
-
-    const template = fs.readFileSync('src/templates/base.html', 'utf8');
-    const indexContent = fs.readFileSync('src/index.html', 'utf8');
-    
-    // Extract the main content from index.html
-    const mainContentMatch = indexContent.match(/<main>([\s\S]*?)<\/main>/);
-    const mainContent = mainContentMatch ? mainContentMatch[1] : '';
-    
-    // Replace content in template and ensure basePath is replaced
-    const finalHtml = template
-        .replace('{{title}}', 'Welcome to My Site')
-        .replace('{{content}}', mainContent)
-        .replace(/{{basePath}}/g, BASE_PATH);  // This is important!
-    
-    fs.writeFileSync('docs/index.html', finalHtml);
+// Add this function to handle partials
+function loadPartial(partialName) {
+    const partialPath = path.join('src/templates/partials', `${partialName}.html`);
+    if (fs.existsSync(partialPath)) {
+        return fs.readFileSync(partialPath, 'utf8');
+    }
+    return ''; // Return empty string if partial doesn't exist
 }
 
-// Build pages from markdown
+// Add this function to replace all partials in a template
+function replacePartials(template) {
+    const partialRegex = /{{(\w+)}}/g;
+    return template.replace(partialRegex, (match, partialName) => {
+        if (partialName === 'content' || partialName === 'title' || partialName === 'basePath') {
+            return match; // Skip these special variables
+        }
+        return loadPartial(partialName);
+    });
+}
+
+// Update the buildPage function to include partial replacement
 function buildPage(filePath) {
     const fileContent = fs.readFileSync(filePath, 'utf8');
     const { attributes, body } = frontMatter(fileContent);
@@ -77,20 +77,18 @@ function buildPage(filePath) {
     let outputPath;
     
     if (pathParts[0] === 'blog') {
-        // Handle blog posts
         outputPath = path.join('docs', 'blog', baseName, 'index.html');
     } else if (baseName === 'index') {
         outputPath = path.join('docs', 'index.html');
     } else {
-        // Create a directory for each page and put an index.html inside
         outputPath = path.join('docs', baseName, 'index.html');
     }
     
-    // Ensure directory exists
     fs.mkdirSync(path.dirname(outputPath), { recursive: true });
     
-    // Get template
-    const template = fs.readFileSync(`src/templates/${attributes.template || 'base'}.html`, 'utf8');
+    // Get template and process partials
+    let template = fs.readFileSync(`src/templates/${attributes.template || 'base'}.html`, 'utf8');
+    template = replacePartials(template);
     
     // Replace template variables
     const finalHtml = template
@@ -101,7 +99,26 @@ function buildPage(filePath) {
     fs.writeFileSync(outputPath, finalHtml);
 }
 
-// Process all markdown files
+// Update the processIndexHtml function to include partial replacement
+function processIndexHtml() {
+    if (!fs.existsSync('src/index.html')) return;
+
+    let template = fs.readFileSync('src/templates/base.html', 'utf8');
+    template = replacePartials(template);
+    const indexContent = fs.readFileSync('src/index.html', 'utf8');
+    
+    const mainContentMatch = indexContent.match(/<main>([\s\S]*?)<\/main>/);
+    const mainContent = mainContentMatch ? mainContentMatch[1] : '';
+    
+    const finalHtml = template
+        .replace('{{title}}', 'Welcome to My Site')
+        .replace('{{content}}', mainContent)
+        .replace(/{{basePath}}/g, BASE_PATH);
+    
+    fs.writeFileSync('docs/index.html', finalHtml);
+}
+
+// Build pages from markdown
 function buildSite() {
     // Process files in root content directory
     const files = fs.readdirSync('src/content');
@@ -165,13 +182,26 @@ ${posts.map(post => `- [${post.title}](${post.url})`).join('\n')}
 processIndexHtml();
 buildSite();
 
-// Watch mode
+// Update the watch mode to include partials directory
 if (process.argv.includes('--watch')) {
     console.log('Watching for changes...');
+    
+    // Watch content directory
     fs.watch('src/content', (eventType, filename) => {
         if (filename && filename.endsWith('.md')) {
             console.log(`Rebuilding due to changes in ${filename}`);
             buildSite();
         }
     });
+
+    // Watch partials directory
+    const partialsDir = 'src/templates/partials';
+    if (fs.existsSync(partialsDir)) {
+        fs.watch(partialsDir, (eventType, filename) => {
+            if (filename && filename.endsWith('.html')) {
+                console.log(`Rebuilding due to changes in partial: ${filename}`);
+                buildSite();
+            }
+        });
+    }
 } 
