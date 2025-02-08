@@ -64,7 +64,7 @@ function replacePartials(template) {
     });
 }
 
-// Update the buildPage function to include partial replacement
+// Update the buildPage function to handle paths correctly
 function buildPage(filePath) {
     const fileContent = fs.readFileSync(filePath, 'utf8');
     const { attributes, body } = frontMatter(fileContent);
@@ -90,16 +90,21 @@ function buildPage(filePath) {
     let template = fs.readFileSync(`src/templates/${attributes.template || 'base'}.html`, 'utf8');
     template = replacePartials(template);
     
-    // Replace template variables
+    // Replace template variables and ensure all paths have basePath
     const finalHtml = template
         .replace('{{title}}', attributes.title)
         .replace('{{content}}', html)
-        .replace(/{{basePath}}/g, BASE_PATH);
+        .replace(/{{basePath}}/g, BASE_PATH)
+        // Fix absolute paths in href and src attributes
+        .replace(/href="\//g, `href="${BASE_PATH}/`)
+        .replace(/src="\//g, `src="${BASE_PATH}/`)
+        // Don't modify external links (those starting with http)
+        .replace(new RegExp(`href="${BASE_PATH}/http`, 'g'), 'href="http');
     
     fs.writeFileSync(outputPath, finalHtml);
 }
 
-// Update the processIndexHtml function to include partial replacement
+// Update the processIndexHtml function to handle paths correctly
 function processIndexHtml() {
     if (!fs.existsSync('src/index.html')) return;
 
@@ -110,10 +115,16 @@ function processIndexHtml() {
     const mainContentMatch = indexContent.match(/<main>([\s\S]*?)<\/main>/);
     const mainContent = mainContentMatch ? mainContentMatch[1] : '';
     
+    // Replace template variables and ensure all paths have basePath
     const finalHtml = template
         .replace('{{title}}', 'Welcome to My Site')
         .replace('{{content}}', mainContent)
-        .replace(/{{basePath}}/g, BASE_PATH);
+        .replace(/{{basePath}}/g, BASE_PATH)
+        // Fix absolute paths in href and src attributes
+        .replace(/href="\//g, `href="${BASE_PATH}/`)
+        .replace(/src="\//g, `src="${BASE_PATH}/`)
+        // Don't modify external links (those starting with http)
+        .replace(new RegExp(`href="${BASE_PATH}/http`, 'g'), 'href="http');
     
     fs.writeFileSync('docs/index.html', finalHtml);
 }
