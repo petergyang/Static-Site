@@ -3,7 +3,7 @@ const path = require('path');
 const { marked } = require('marked');
 const frontMatter = require('front-matter');
 
-// Add base path configuration
+// Update the BASE_PATH configuration
 const BASE_PATH = process.env.NODE_ENV === 'production' ? '/Static-Site' : '';
 
 // Ensure directories exist
@@ -64,7 +64,7 @@ function replacePartials(template) {
     });
 }
 
-// Update the buildPage function to handle paths correctly
+// Update the buildPage function to handle paths more carefully
 function buildPage(filePath) {
     const fileContent = fs.readFileSync(filePath, 'utf8');
     const { attributes, body } = frontMatter(fileContent);
@@ -90,21 +90,23 @@ function buildPage(filePath) {
     let template = fs.readFileSync(`src/templates/${attributes.template || 'base'}.html`, 'utf8');
     template = replacePartials(template);
     
-    // Replace template variables and ensure all paths have basePath
+    // Update how we replace paths in the HTML
     const finalHtml = template
         .replace('{{title}}', attributes.title)
-        .replace('{{content}}', html.replace(/href="\/(?!http)/g, `href="${BASE_PATH}/`))
+        .replace('{{content}}', html)
         .replace(/{{basePath}}/g, BASE_PATH)
-        // Fix absolute paths in href and src attributes
+        // Fix absolute paths in href and src attributes, but only if they're internal links
         .replace(/href="\//g, `href="${BASE_PATH}/`)
         .replace(/src="\//g, `src="${BASE_PATH}/`)
         // Don't modify external links (those starting with http)
-        .replace(new RegExp(`href="${BASE_PATH}/http`, 'g'), 'href="http');
+        .replace(new RegExp(`href="${BASE_PATH}/http`, 'g'), 'href="http')
+        // Fix any double Static-Site in paths
+        .replace(new RegExp(`${BASE_PATH}${BASE_PATH}`, 'g'), BASE_PATH);
     
     fs.writeFileSync(outputPath, finalHtml);
 }
 
-// Update the processIndexHtml function to handle paths correctly
+// Update the processIndexHtml function similarly
 function processIndexHtml() {
     if (!fs.existsSync('src/index.html')) return;
 
@@ -115,16 +117,17 @@ function processIndexHtml() {
     const mainContentMatch = indexContent.match(/<main>([\s\S]*?)<\/main>/);
     const mainContent = mainContentMatch ? mainContentMatch[1] : '';
     
-    // Replace template variables and ensure all paths have basePath
     const finalHtml = template
         .replace('{{title}}', 'Welcome to My Site')
         .replace('{{content}}', mainContent)
         .replace(/{{basePath}}/g, BASE_PATH)
-        // Fix absolute paths in href and src attributes
+        // Fix absolute paths in href and src attributes, but only if they're internal links
         .replace(/href="\//g, `href="${BASE_PATH}/`)
         .replace(/src="\//g, `src="${BASE_PATH}/`)
         // Don't modify external links (those starting with http)
-        .replace(new RegExp(`href="${BASE_PATH}/http`, 'g'), 'href="http');
+        .replace(new RegExp(`href="${BASE_PATH}/http`, 'g'), 'href="http')
+        // Fix any double Static-Site in paths
+        .replace(new RegExp(`${BASE_PATH}${BASE_PATH}`, 'g'), BASE_PATH);
     
     fs.writeFileSync('docs/index.html', finalHtml);
 }
@@ -154,7 +157,7 @@ function buildSite() {
     buildBlogIndex();
 }
 
-// Add this new function to generate the blog index
+// Update the buildBlogIndex function
 function buildBlogIndex() {
     const blogDir = path.join('src/content/blog');
     if (!fs.existsSync(blogDir)) {
@@ -170,7 +173,8 @@ function buildBlogIndex() {
             return {
                 title: attributes.title,
                 date: attributes.date,
-                url: `${BASE_PATH}/blog/${path.basename(file, '.md')}`
+                // Update URL construction to avoid double slashes
+                url: `/blog/${path.basename(file, '.md')}`
             };
         })
         .sort((a, b) => new Date(b.date) - new Date(a.date));
