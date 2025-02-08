@@ -1,20 +1,37 @@
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+Pro:wght@400;600&display=swap');
+
 /* Basic responsive styles */
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-family: 'Source Serif Pro', serif;
     line-height: 1.6;
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 1rem;
+    color: #1a1a1a;
+}
+
+/* Update headlines to use Inter */
+h1, h2, h3, h4, h5, h6,
+.welcome-title,
+.gradient-title,
+nav a,
+.find-out-more,
+.topic {
+    font-family: 'Inter', sans-serif;
 }
 
 nav {
     padding: 1rem 0;
+    display: flex;
+    justify-content: flex-end;
 }
 
 nav a {
-    margin-right: 1rem;
+    margin-left: 2rem;
     color: #333;
     text-decoration: none;
+    font-weight: 500;
 }
 
 nav a:hover {
@@ -22,5 +39,96 @@ nav a:hover {
 }
 
 main {
-    margin: 2rem 0;
+    margin: 4rem 0;
+    text-align: center;
+}
+
+.welcome-title {
+    font-size: 2.5rem;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+}
+
+.gradient-title {
+    font-size: 4rem;
+    margin-top: 0;
+    background: linear-gradient(45deg, #0066ff, #00c6ff, #0066ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 3rem;
+}
+
+.intro-text {
+    max-width: 800px;
+    margin: 0 auto 3rem;
+    font-size: 1.5rem;
+    line-height: 1.4;
+}
+
+.highlight {
+    color: #666;
+    font-weight: 500;
+}
+
+.cta-button {
+    margin: 3rem 0;
+}
+
+.find-out-more {
+    background: #1a1a1a;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1.2rem;
+    transition: transform 0.2s;
+}
+
+.find-out-more:hover {
+    transform: translateY(-2px);
+}
+
+.stats-section {
+    margin-top: 4rem;
+}
+
+.stats-section p {
+    font-size: 1.2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.stats-section a {
+    color: #0066ff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.stats-section a:hover {
+    text-decoration: underline;
+}
+
+footer {
+    text-align: center;
+    padding: 2rem 0;
+    color: #666;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .gradient-title {
+        font-size: 2.5rem;
+    }
+    
+    .intro-text {
+        font-size: 1.2rem;
+        padding: 0 1rem;
+    }
+    
+    .stats-section h2 {
+        font-size: 1.5rem;
+        padding: 0 1rem;
+    }
 } 

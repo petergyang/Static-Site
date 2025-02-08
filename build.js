@@ -44,8 +44,33 @@ if (fs.existsSync('src/scripts')) {
     fs.copySync('src/scripts', 'docs/scripts', { overwrite: true });
 }
 
+// Add this function near the top of the file
+function processIndexHtml() {
+    if (!fs.existsSync('src/index.html')) return;
+
+    const template = fs.readFileSync('src/templates/base.html', 'utf8');
+    const indexContent = fs.readFileSync('src/index.html', 'utf8');
+    
+    // Extract the main content from index.html
+    const mainContentMatch = indexContent.match(/<main>([\s\S]*?)<\/main>/);
+    const mainContent = mainContentMatch ? mainContentMatch[1] : '';
+    
+    // Replace content in template
+    const finalHtml = template
+        .replace('{{title}}', 'Welcome to My Site')
+        .replace('{{content}}', mainContent)
+        .replace(/{{basePath}}/g, BASE_PATH);
+    
+    fs.writeFileSync('docs/index.html', finalHtml);
+}
+
 // Build pages from markdown
 function buildPage(filePath) {
+    // Skip index.md if it exists since we're using direct index.html
+    if (path.basename(filePath) === 'index.md') {
+        return;
+    }
+
     const fileContent = fs.readFileSync(filePath, 'utf8');
     const { attributes, body } = frontMatter(fileContent);
     const html = marked(body);
@@ -87,6 +112,7 @@ function buildSite() {
     });
 }
 
+processIndexHtml();
 buildSite();
 
 // Watch mode
