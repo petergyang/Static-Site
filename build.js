@@ -97,14 +97,17 @@ function buildPage(filePath) {
     let template = fs.readFileSync(`src/templates/${attributes.template || 'base'}.html`, 'utf8');
     template = replacePartials(template);
     
-    // Update the finalHtml processing
+    // First replace basePath in the content
+    let processedHtml = html.replace(/href="\//g, `href="${BASE_PATH}/`);
+    
+    // Then create the final HTML
     const finalHtml = template
         .replace('{{title}}', attributes.title)
-        .replace('{{content}}', html)
+        .replace('{{content}}', processedHtml)
         .replace(/{{basePath}}/g, BASE_PATH)
         // Fix absolute paths in href and src attributes
-        .replace(/(?<!content=")href="\//g, `href="${BASE_PATH}/`)
-        .replace(/(?<!content=")src="\//g, `src="${BASE_PATH}/`)
+        .replace(/href="\//g, `href="${BASE_PATH}/`)
+        .replace(/src="\//g, `src="${BASE_PATH}/`)
         // Don't modify external links
         .replace(new RegExp(`href="${BASE_PATH}/http`, 'g'), 'href="http')
         // Fix any double Static-Site in paths
@@ -182,8 +185,8 @@ function buildBlogIndex() {
             return {
                 title: attributes.title,
                 date: attributes.date,
-                // Use relative paths in markdown content
-                url: `./blog/${path.basename(file, '.md')}`
+                // Use absolute path without basePath (it will be added during build)
+                url: `/blog/${path.basename(file, '.md')}`
             };
         })
         .sort((a, b) => new Date(b.date) - new Date(a.date));
