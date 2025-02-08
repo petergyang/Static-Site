@@ -42,28 +42,35 @@ if (fs.existsSync('src/scripts')) {
 }
 
 // Build pages from markdown
-function buildPage(filepath) {
-    const content = fs.readFileSync(filepath, 'utf-8');
-    const { attributes, body } = frontMatter(content);
+function buildPage(filePath) {
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+    const { attributes, body } = frontMatter(fileContent);
     const html = marked(body);
     
-    const template = fs.readFileSync('src/templates/base.html', 'utf-8');
-    const page = template
-        .replace('{{title}}', attributes.title || 'My Site')
+    // Get the output path
+    const relativePath = path.relative('src/content', filePath);
+    const baseName = path.basename(relativePath, '.md');
+    let outputPath;
+    
+    if (baseName === 'index') {
+        outputPath = path.join('docs', 'index.html');
+    } else {
+        // Create a directory for each page and put an index.html inside
+        outputPath = path.join('docs', baseName, 'index.html');
+    }
+    
+    // Ensure directory exists
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+    
+    // Get template
+    const template = fs.readFileSync(`src/templates/${attributes.template}.html`, 'utf8');
+    
+    // Replace template variables
+    const finalHtml = template
+        .replace('{{title}}', attributes.title)
         .replace('{{content}}', html);
     
-    // Generate output path
-    const relativePath = path.relative('src/content', filepath);
-    const outputPath = path.join('docs', relativePath.replace('.md', '.html'));
-    
-    // If file is index.md, put it in the root
-    if (path.basename(filepath) === 'index.md') {
-        fs.outputFileSync('docs/index.html', page);
-    } else {
-        // Create directory for the page and add index.html
-        const dir = outputPath.replace('.html', '');
-        fs.outputFileSync(path.join(dir, 'index.html'), page);
-    }
+    fs.writeFileSync(outputPath, finalHtml);
 }
 
 // Process all markdown files
